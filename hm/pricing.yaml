@@ -1,0 +1,26 @@
+# USD per million tokens, standard tier, no batch discount. Cache tokens are priced with the
+# multipliers below (Anthropic's published ones). Harness-reported cost, when any, is kept as a
+# separate score for comparison.
+# Source: https://platform.claude.com/docs/en/about-claude/pricing — re-check before any public number.
+# Patterns are fnmatch'ed against the exact model string in the trace; first match wins, so
+# more specific patterns come first.
+as_of: "2026-10-23"
+cache_multipliers: { cache_read: 0.1, cache_write_5m: 1.25, cache_write_1h: 2.0 }
+prices:
+  - pattern: "mock*"
+    input: 3.00
+    output: 15.00
+    note: "placeholder so the demo exercises the cost scorer"
+  - { pattern: "claude-fable-5-1*", input: 10.00, output: 50.00 }
+  - { pattern: "claude-fable-5*", input: 10.00, output: 50.00 }
+  - { pattern: "claude-opus-5-5*", input: 4.00, output: 20.00 }
+  - { pattern: "claude-opus-5*", input: 5.00, output: 25.00 }
+  - { pattern: "claude-opus-4-[5678]*", input: 5.00, output: 25.00 }
+  - { pattern: "claude-opus-4-1*", input: 15.00, output: 75.00 }
+  - { pattern: "claude-opus-4*", input: 15.00, output: 75.00 }
+  - { pattern: "claude-sonnet-5-5*", input: 2.00, output: 10.00 }
+  - { pattern: "claude-sonnet-5*", input: 2.00, output: 10.00 }
+  - { pattern: "claude-sonnet-4*", input: 3.00, output: 15.00 }
+  - { pattern: "claude-haiku-5-5*", input: 0.10, output: 0.50, note: "prompts ≤100k tokens" }
+  - { pattern: "claude-haiku-4-5*", input: 1.00, output: 5.00 }
+  - { pattern: "claude-3-5-haiku*", input: 0.80, output: 4.00 }

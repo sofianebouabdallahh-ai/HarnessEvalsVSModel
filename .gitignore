@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+runs/
+.env
+*.egg-info/
+dist/
+.DS_Store
+.cache/
+.tools/
+.claude/
+
+# papers read locally, never committed
+*.pdf
+!docs/harness_engineering_report.pdf

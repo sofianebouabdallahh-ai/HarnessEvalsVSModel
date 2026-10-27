@@ -1,0 +1,16 @@
+apiVersion: 1
+datasources:
+  - name: hm-postgres
+    uid: hm-pg
+    type: grafana-postgresql-datasource
+    access: proxy
+    url: postgres:5432
+    user: hm
+    isDefault: true
+    secureJsonData:
+      password: hm
+    jsonData:
+      database: hm
+      sslmode: disable
+      postgresVersion: 1600
+      timescaledb: false

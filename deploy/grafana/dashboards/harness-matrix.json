@@ -1,0 +1,419 @@
+{
+  "uid": "harness-matrix",
+  "title": "Harness Matrix",
+  "tags": [
+    "harness-matrix"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "run",
+        "label": "run(s) \u2014 pick one per harness to build the matrix",
+        "type": "query",
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "hm-pg"
+        },
+        "query": "select run_id from runs order by started_at desc",
+        "refresh": 1,
+        "sort": 0,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": [],
+        "includeAll": true,
+        "multi": true
+      },
+      {
+        "name": "mode",
+        "label": "mode",
+        "type": "custom",
+        "query": "out_of_the_box,equalized_prompt",
+        "current": {
+          "text": "out_of_the_box",
+          "value": "out_of_the_box"
+        },
+        "options": [
+          {
+            "text": "out_of_the_box",
+            "value": "out_of_the_box",
+            "selected": true
+          },
+          {
+            "text": "equalized_prompt",
+            "value": "equalized_prompt",
+            "selected": false
+          }
+        ]
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "table",
+      "title": "1 \u00b7 The matrix \u2014 pass^1 with 95% bootstrap CI",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 8
+      },
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "hm-pg"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select harness, run_id, benchmark || '/' || suite as benchmark, value as \"pass^1\", ci_lo as lo, ci_hi as hi, n_episodes as n, n_tasks as tasks from cells where run_id in (${run:sqlstring}) and mode = '$mode' and metric = 'pass^1' order by harness, benchmark"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "pass^1"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "max",
+                "value": 1
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-RdYlGr"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "show": false
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "xychart",
+      "title": "2 \u00b7 Safety\u2013utility frontier \u2014 targeted ASR (x) vs benign utility (y), one dot per harness",
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 9
+      },
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "hm-pg"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select harness, max(case when metric = 'targeted_asr' then value end) as asr, max(case when metric = 'benign_utility' then value end) as utility from cells where run_id in (${run:sqlstring}) and mode = '$mode' group by harness order by harness"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 1,
+          "decimals": 2,
+          "custom": {
+            "pointSize": {
+              "fixed": 12
+            },
+            "show": "points"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "mapping": "manual",
+        "series": [
+          {
+            "frame": {
+              "matcher": {
+                "id": "byIndex",
+                "options": 0
+              }
+            },
+            "x": {
+              "matcher": {
+                "id": "byName",
+                "options": "asr"
+              }
+            },
+            "y": {
+              "matcher": {
+                "id": "byName",
+                "options": "utility"
+              }
+            },
+            "name": {
+              "fixed": "harness"
+            }
+          }
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "barchart",
+      "title": "3 \u00b7 USD per solved task",
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 9
+      },
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "hm-pg"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select harness || ' \u00b7 ' || benchmark || '/' || suite as cell, value as usd_per_solve from cells where run_id in (${run:sqlstring}) and mode = '$mode' and metric = 'usd_per_solve' order by 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "decimals": 4
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "showValue": "auto",
+        "legend": {
+          "showLegend": false
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "barchart",
+      "title": "4 \u00b7 Reliability \u2014 pass^1 vs pass^5 (high pass^1, low pass^5 = lucky, not reliable)",
+      "gridPos": {
+        "x": 0,
+        "y": 17,
+        "w": 12,
+        "h": 9
+      },
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "hm-pg"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select harness || ' \u00b7 ' || benchmark || '/' || suite as cell, max(case when metric = 'pass^1' then value end) as \"pass^1\", max(case when metric = 'pass^3' then value end) as \"pass^3\", max(case when metric = 'pass^5' then value end) as \"pass^5\" from cells where run_id in (${run:sqlstring}) and mode = '$mode' group by 1 order by 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 1,
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "auto",
+        "groupWidth": 0.7,
+        "barWidth": 0.9,
+        "showValue": "auto",
+        "legend": {
+          "showLegend": true,
+          "placement": "bottom"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "table",
+      "title": "5 \u00b7 Security axis \u2014 benign utility, utility under attack, ASR, ASR | injection seen, policy violations, over-refusal, API refusals",
+      "gridPos": {
+        "x": 12,
+        "y": 17,
+        "w": 12,
+        "h": 9
+      },
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "hm-pg"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "select harness, benchmark || '/' || suite as benchmark, max(case when metric = 'benign_utility' then value end) as benign_utility, max(case when metric = 'utility_under_attack' then value end) as utility_under_attack, max(case when metric = 'targeted_asr' then value end) as targeted_asr, max(case when metric = 'asr_given_seen' then value end) as asr_given_seen, max(case when metric = 'injection_seen_rate' then value end) as injection_seen_rate,\n       max(case when metric = 'policy_violation_rate' then value end) as policy_violation_rate,\n       max(case when metric = 'over_refusal_rate' then value end) as over_refusal_rate,\n       max(case when metric = 'api_refusal_rate' then value end) as api_refusal_rate from cells where run_id in (${run:sqlstring}) and mode = '$mode' group by 1, 2 order by 1, 2"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true
+      }
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "7 \u00b7 Mode delta \u2014 out_of_the_box minus equalized_prompt (how much of the gap is just the prompt)",
+      "gridPos": {
+        "x": 0,
+        "y": 33,
+        "w": 24,
+        "h": 8
+      },
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "hm-pg"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "with latest as (select distinct on (c.mode, c.harness, c.benchmark, c.suite, c.metric) c.run_id, c.mode, c.harness, c.benchmark, c.suite, c.metric, c.value from cells c join runs r on r.run_id = c.run_id where r.model = (select model from runs where run_id in (${run:sqlstring})) and metric in ('pass^1','targeted_asr','usd_per_solve') order by c.mode, c.harness, c.benchmark, c.suite, c.metric, r.started_at desc) select o.harness, o.benchmark || '/' || o.suite as benchmark, o.metric, o.value as out_of_the_box, e.value as equalized_prompt, o.value - e.value as delta from latest o join latest e on e.harness = o.harness and e.benchmark = o.benchmark and e.suite = o.suite and e.metric = o.metric and e.mode = 'equalized_prompt' where o.mode = 'out_of_the_box' order by 1, 2, 3"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 3
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "delta"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "min",
+                "value": -0.5
+              },
+              {
+                "id": "max",
+                "value": 0.5
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-RdYlGr"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true
+      }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "6 \u00b7 Run log \u2014 episodes over time by harness",
+      "gridPos": {
+        "x": 0,
+        "y": 26,
+        "w": 24,
+        "h": 7
+      },
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "hm-pg"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "select $__timeGroupAlias(ts, '1m'), harness as metric, count(*) as episodes from episodes where $__timeFilter(ts) group by 1, 2 order by 1"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    }
+  ]
+}

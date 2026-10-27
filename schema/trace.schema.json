@@ -1,0 +1,522 @@
+{
+  "$defs": {
+    "AdapterManifest": {
+      "description": "Spec \u00a712. Every deviation from the raw spec, declared by the adapter.",
+      "properties": {
+        "system_prompt_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "System Prompt Sha256"
+        },
+        "system_prompt_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "System Prompt Reason"
+        },
+        "injected_retries": {
+          "default": 0,
+          "title": "Injected Retries",
+          "type": "integer"
+        },
+        "extra_tools": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Extra Tools",
+          "type": "array"
+        },
+        "disabled_native_tools": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Disabled Native Tools",
+          "type": "array"
+        },
+        "notes": {
+          "default": "",
+          "title": "Notes",
+          "type": "string"
+        },
+        "extra": {
+          "additionalProperties": true,
+          "title": "Extra",
+          "type": "object"
+        }
+      },
+      "required": [
+        "system_prompt_sha256"
+      ],
+      "title": "AdapterManifest",
+      "type": "object"
+    },
+    "LLMCallStep": {
+      "properties": {
+        "type": {
+          "const": "llm_call",
+          "default": "llm_call",
+          "title": "Type",
+          "type": "string"
+        },
+        "i": {
+          "title": "I",
+          "type": "integer"
+        },
+        "input_tokens": {
+          "title": "Input Tokens",
+          "type": "integer"
+        },
+        "output_tokens": {
+          "title": "Output Tokens",
+          "type": "integer"
+        },
+        "latency_ms": {
+          "title": "Latency Ms",
+          "type": "integer"
+        },
+        "stop_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stop Reason"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        }
+      },
+      "required": [
+        "i",
+        "input_tokens",
+        "output_tokens",
+        "latency_ms"
+      ],
+      "title": "LLMCallStep",
+      "type": "object"
+    },
+    "Score": {
+      "properties": {
+        "scorer": {
+          "title": "Scorer",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "explanation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Explanation"
+        }
+      },
+      "required": [
+        "scorer",
+        "name",
+        "value"
+      ],
+      "title": "Score",
+      "type": "object"
+    },
+    "ToolCallStep": {
+      "properties": {
+        "type": {
+          "const": "tool_call",
+          "default": "tool_call",
+          "title": "Type",
+          "type": "string"
+        },
+        "i": {
+          "title": "I",
+          "type": "integer"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "args": {
+          "additionalProperties": true,
+          "title": "Args",
+          "type": "object"
+        },
+        "args_sha256": {
+          "title": "Args Sha256",
+          "type": "string"
+        },
+        "call_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Call Id"
+        }
+      },
+      "required": [
+        "i",
+        "name",
+        "args",
+        "args_sha256"
+      ],
+      "title": "ToolCallStep",
+      "type": "object"
+    },
+    "ToolResultStep": {
+      "properties": {
+        "type": {
+          "const": "tool_result",
+          "default": "tool_result",
+          "title": "Type",
+          "type": "string"
+        },
+        "i": {
+          "title": "I",
+          "type": "integer"
+        },
+        "call_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Call Id"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "content": {
+          "title": "Content",
+          "type": "string"
+        },
+        "latency_ms": {
+          "title": "Latency Ms",
+          "type": "integer"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error"
+        },
+        "untrusted": {
+          "default": false,
+          "title": "Untrusted",
+          "type": "boolean"
+        },
+        "injection_marker": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Injection Marker"
+        }
+      },
+      "required": [
+        "i",
+        "name",
+        "content",
+        "latency_ms"
+      ],
+      "title": "ToolResultStep",
+      "type": "object"
+    },
+    "Totals": {
+      "properties": {
+        "turns": {
+          "default": 0,
+          "title": "Turns",
+          "type": "integer"
+        },
+        "tool_calls": {
+          "default": 0,
+          "title": "Tool Calls",
+          "type": "integer"
+        },
+        "tool_errors": {
+          "default": 0,
+          "title": "Tool Errors",
+          "type": "integer"
+        },
+        "input_tokens": {
+          "default": 0,
+          "title": "Input Tokens",
+          "type": "integer"
+        },
+        "output_tokens": {
+          "default": 0,
+          "title": "Output Tokens",
+          "type": "integer"
+        },
+        "usd": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Usd"
+        },
+        "wall_clock_ms": {
+          "default": 0,
+          "title": "Wall Clock Ms",
+          "type": "integer"
+        }
+      },
+      "title": "Totals",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    },
+    "task_id": {
+      "title": "Task Id",
+      "type": "string"
+    },
+    "benchmark": {
+      "title": "Benchmark",
+      "type": "string"
+    },
+    "suite": {
+      "title": "Suite",
+      "type": "string"
+    },
+    "model": {
+      "title": "Model",
+      "type": "string"
+    },
+    "harness": {
+      "title": "Harness",
+      "type": "string"
+    },
+    "harness_version": {
+      "title": "Harness Version",
+      "type": "string"
+    },
+    "seed": {
+      "title": "Seed",
+      "type": "integer"
+    },
+    "mode": {
+      "default": "out_of_the_box",
+      "enum": [
+        "out_of_the_box",
+        "equalized_prompt"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "started_at": {
+      "format": "date-time",
+      "title": "Started At",
+      "type": "string"
+    },
+    "attacked": {
+      "default": false,
+      "title": "Attacked",
+      "type": "boolean"
+    },
+    "attack": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Attack"
+    },
+    "adapter_manifest": {
+      "$ref": "#/$defs/AdapterManifest"
+    },
+    "steps": {
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/LLMCallStep"
+          },
+          {
+            "$ref": "#/$defs/ToolCallStep"
+          },
+          {
+            "$ref": "#/$defs/ToolResultStep"
+          }
+        ]
+      },
+      "title": "Steps",
+      "type": "array"
+    },
+    "final_output": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Final Output"
+    },
+    "env_state_hash": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Env State Hash"
+    },
+    "env_final": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Env Final"
+    },
+    "totals": {
+      "$ref": "#/$defs/Totals"
+    },
+    "tainted": {
+      "default": false,
+      "title": "Tainted",
+      "type": "boolean"
+    },
+    "taint_reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Taint Reason"
+    },
+    "error": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Error"
+    },
+    "scores": {
+      "items": {
+        "$ref": "#/$defs/Score"
+      },
+      "title": "Scores",
+      "type": "array"
+    }
+  },
+  "required": [
+    "run_id",
+    "task_id",
+    "benchmark",
+    "suite",
+    "model",
+    "harness",
+    "harness_version",
+    "seed",
+    "adapter_manifest"
+  ],
+  "title": "Trace",
+  "type": "object"
+}

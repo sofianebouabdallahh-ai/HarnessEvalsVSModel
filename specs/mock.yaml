@@ -1,0 +1,13 @@
+# Zero-cost demo spec. The mock's parameters live in the model string so they are pinned
+# and logged verbatim, like a real model id.
+id: mock-demo
+model:
+  provider: mock
+  name: "mock?flake=0.15&gull=0.6"
+  temperature: 0.0
+limits:
+  max_turns: 12
+  max_tool_calls: 10
+  max_output_tokens: 512
+  wall_clock_s: 60
+system_prompt: null

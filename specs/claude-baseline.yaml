@@ -1,0 +1,13 @@
+# ${MODEL} is expanded from the environment at run time and logged verbatim.
+id: claude-baseline
+model:
+  provider: anthropic
+  name: ${MODEL}
+  temperature: 0.0          # recorded only: the Messages API exposes no sampling controls (ROADMAP D12)
+tools_source: benchmark
+limits:
+  max_turns: 30
+  max_tool_calls: 60
+  max_output_tokens: 4096
+  wall_clock_s: 600
+system_prompt: null
